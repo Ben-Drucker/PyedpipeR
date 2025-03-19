@@ -1,4 +1,5 @@
 import importlib, inspect, os, pkgutil, re, shutil, textwrap, types
+from .r_scripts.r_pkg_creation import create_package_skeleton, do_roxygen
 
 
 def extract_docstrings(module_name):
@@ -38,10 +39,10 @@ def to_roxygen(docstring: str):
     ds_with_value = re.sub(r"Returns\n\-+\n", "@returns ", ds_with_params)
     ds_with_examples = re.sub(r"Examples\n\-+\n", "@examples ", ds_with_value)
     ds_with_export = ds_with_examples + "@export"
-    ds_with_throws = re.sub(r"Raises\n\-+\n", r"", ds_with_export)
-    ds_with_throws_2 = re.sub(r"`(.*)` :\n\s*(.*)", r"\n@throws \1 \2", ds_with_throws)
-    ds_with_notes = re.sub(r"Notes\n\-+\n", r"@details ", ds_with_throws_2)
-    # ds_with_comments = re.sub(r"^(.)", r"#' \1", ds_with_throws)
+    ds_with_section = re.sub(r"Raises\n\-+\n", r"", ds_with_export)
+    ds_with_section_2 = re.sub(r"`(.*)` :\n\s*(.*)", r"\n@section Throws: \1 \2", ds_with_section)
+    ds_with_notes = re.sub(r"Notes\n\-+\n", r"@details ", ds_with_section_2)
+    # ds_with_comments = re.sub(r"^(.)", r"#' \1", ds_with_section)
     ds_no_tabs = re.sub(r"\s{2}", "", ds_with_notes)
     sections = re.split(r"@", ds_no_tabs)
     sections = [sections[0]] + [f"@{s}" for s in sections[1:]]
@@ -60,7 +61,7 @@ def to_roxygen(docstring: str):
     ]
     ds_fill_2 = []
     for i in range(len(ds_fill)):
-        if main_search := re.search("@(param|returns|throws|export)", ds_fill[i]):
+        if main_search := re.search("@(param|returns|section|export)", ds_fill[i]):
             if not re.search(main_search.group(1), ds_fill[i - 1]):
                 ds_fill_2.append("#'\n" + ds_fill[i])
             else:
@@ -95,7 +96,8 @@ def main_convert(root_module_name: str):
                 if not re.search(r"^__", module_name) and not re.search(r"tests\.", module_name):
                     module_str = module_obj.__name__ + "." + module_name
                     print(
-                        f"{f'Working on {module_str} at level {level}':{' '}<{shutil.get_terminal_size().columns}}"
+                        f"{f'Working on {module_str} at level {level}':{' '}<{shutil.get_terminal_size().columns}}",
+                        end="\r",
                     )
                     module_obj_inner = importlib.import_module(module_str)
                     results.append(recurse_in_module(module_obj_inner, level + 1))
@@ -105,7 +107,13 @@ def main_convert(root_module_name: str):
     return module_structure
 
 
-def create_R_files(module_structure, root_dir="R", exclude_top_level=True, overwrite=False):
+def create_R_files(module_structure, root_dir="RPkg", exclude_top_level=True, overwrite=False):
+    root_dir_orig = root_dir
+    root_dir = os.path.join(root_dir, "R")
+    if os.path.exists(root_dir) or overwrite:
+        shutil.rmtree(root_dir_orig)
+        # os.makedirs(root_dir, exist_ok=True)
+    create_package_skeleton(root_dir_orig, next(iter(module_structure.keys())).split(".")[0])
     for module_name, r_fns in module_structure.items():
         if exclude_top_level:
             start_idx = 1
@@ -121,6 +129,7 @@ def create_R_files(module_structure, root_dir="R", exclude_top_level=True, overw
             with open(full_file_path, "w") as f:
                 f.write(f'py_pkg <- reticulate::import("{module_name}")\n\n')
                 f.write("\n\n\n\n".join(r_fns))
+    do_roxygen(root_dir)
 
 
 def create_R_functions(module_name: str):
@@ -148,7 +157,10 @@ def create_R_functions(module_name: str):
     return fn_strings
 
 
+def all_parts_main(module_name: str, output_path: str, allow_overwrite: bool):
+    module_structure = main_convert(module_name)
+    create_R_files(module_structure, output_path, overwrite=allow_overwrite)
+
+
 if __name__ == "__main__":
-    module_structure = main_convert("uniprot_tools")
-    create_R_files(module_structure, overwrite=True, root_dir="../R")
-    pass
+    all_parts_main("uniprot_tools", "R/", True)
