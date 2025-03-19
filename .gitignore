@@ -1,0 +1,35 @@
+# Python
+*.pyc
+*.pyo
+__pycache__/
+*.pyd
+*.pdb
+*.egg-info/
+*.eggs/
+*.whl
+*.manifest
+*.spec
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+.Ruserdata
+.Renviron
+.Renviron.user
+.Renviron.site
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# macOS
+**/*.DS_Store
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
+**/.Spotlight-V100
+**/.Trashes
+**/Icon?
+
+
