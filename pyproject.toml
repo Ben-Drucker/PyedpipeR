@@ -12,7 +12,9 @@ dependencies = []
 [project.optional-dependencies]
 dev = [
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
+    "pydoctor",
+    "black"
 ]
 
 [tool.hatch.build.targets.sdist]

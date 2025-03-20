@@ -1,7 +1,6 @@
-from importlib import metadata as meta
-import os
-from rpy2.robjects import r
 import re
+from importlib import metadata as meta
+from rpy2.robjects import r
 
 
 def create_package_skeleton(package_root_path: str, pkg_name: str, pkg_name_rnorm: str):
@@ -34,7 +33,7 @@ def create_package_skeleton(package_root_path: str, pkg_name: str, pkg_name_rnor
         f'"{k}" = {processor(metadata_dict[v])}' for k, v in r_desc_to_pyproj_mapping.items()
     ]
     raw_vector_list.append(f'"Name" = "{pkg_name_rnorm}"')
-    raw_vector_list.append(authoReR(metadata_dict['Author-email']))
+    raw_vector_list.append(authoReR(metadata_dict["Author-email"]))
 
     r_vector = f"list({', '.join(raw_vector_list)})"
 
