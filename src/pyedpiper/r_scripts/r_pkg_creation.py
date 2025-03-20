@@ -1,17 +1,16 @@
 from importlib import metadata as meta
+import os
 from rpy2.robjects import r
 import re
 
 
-def create_package_skeleton(package_root_path: str, pkg_name: str):
+def create_package_skeleton(package_root_path: str, pkg_name: str, pkg_name_rnorm: str):
     metadata_dict = dict(meta.metadata(pkg_name).__dict__["_headers"])
     r_desc_to_pyproj_mapping = {
-        "Package": "Name",
         "Title": "Name",
         "Version": "Version",
         "Description": "Description",
         "License": "License-File",
-        "Authors@R": "Author-email",
     }
 
     def processor(x):
@@ -24,17 +23,25 @@ def create_package_skeleton(package_root_path: str, pkg_name: str):
         return f'"{x}"'
 
     def authoReR(auth):
-        fn, ln, em = auth.split(" ")
+        # fn, ln, em = auth.split(" ")
+        return f'"Maintainer" = "{auth}"'
+
         em = re.sub(r"[<>]", "", em)
         personhood = f'person(given="{fn}", family="{ln}", email = "{em}", role = c("aut"))'
         return personhood
 
-    r_vector = (
-        f"list({', '.join([f'"{k}" = {processor(metadata_dict[v]) if v != "Author-email" else authoReR(metadata_dict[v])}' for k, v in r_desc_to_pyproj_mapping.items()])})"
-    )
+    raw_vector_list = [
+        f'"{k}" = {processor(metadata_dict[v])}' for k, v in r_desc_to_pyproj_mapping.items()
+    ]
+    raw_vector_list.append(f'"Name" = "{pkg_name_rnorm}"')
+    raw_vector_list.append(authoReR(metadata_dict['Author-email']))
 
-    r_to_execute = f'usethis::create_package("{package_root_path}", fields = {r_vector})'
-    r('options("needs.promptUser = FALSE)")')
+    r_vector = f"list({', '.join(raw_vector_list)})"
+
+    r_to_execute = (
+        f'options("needs.promptUser = FALSE)"); usethis::create_package("{package_root_path}",'
+        f" fields = {r_vector})"
+    )
     r(r_to_execute)
 
 

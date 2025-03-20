@@ -1,5 +1,76 @@
 import importlib, inspect, os, pkgutil, re, shutil, textwrap, types
+from numpy import nan
+from typing import Any, Union
+
+from torch import NoneType
 from .r_scripts.r_pkg_creation import create_package_skeleton, do_roxygen
+
+
+import collections.abc
+
+# Define new type "convertable types"
+convertable_types = Union[
+    str,
+    int,
+    float,
+    bool,
+    None,
+    tuple,
+    list,
+    set,
+    dict,
+    inspect._empty,  # type: ignore
+]
+
+
+def convert_default_args(default_args: list[convertable_types]):
+    return recurse_in_convert_default_args(default_args)
+
+
+def recurse_in_convert_default_args(
+    default_args: convertable_types | list[convertable_types],
+) -> str | inspect._empty | list[str | inspect._empty]:  # type: ignore
+    r_args = []
+    singleton = False
+    if not isinstance(default_args, collections.abc.Collection):
+        default_args = [default_args]
+        singleton = True
+    for a in default_args:
+        conversion: str | None | inspect._empty = None  # type: ignore
+        if a == inspect._empty:  # type: ignore
+            conversion = inspect._empty()  # type: ignore
+        if isinstance(a, str):
+            conversion = f'"{a}"'
+        if isinstance(a, (int, float)):
+            conversion = f"{a}"
+        if isinstance(a, bool):
+            conversion = str(a).upper()
+        if a is None:
+            conversion = "NULL"
+        if isinstance(a, (tuple, list, set)):
+            all_converted = recurse_in_convert_default_args(a)
+            assert isinstance(all_converted, list) and all(
+                isinstance(x, str) for x in all_converted
+            ), f"Expected all elements to be strings, got {all_converted}"
+            conversion = f"list({', '.join([str(x) for x in all_converted])})"
+        if isinstance(a, dict):
+            conversion = (
+                f"list({', '.join([f'"{k}" = {convert_default_args(v)}' for k, v in a.items()])})"
+            )
+
+        if conversion is None:
+            raise ValueError(f"Unsupported default argument type for '{a}': {type(a)}")
+
+        assert conversion is not None
+        if singleton:
+            return conversion
+        else:
+            r_args.append(conversion)
+
+    return r_args
+
+
+# test_args = [1, 2.0, "a", True, None, (1, 2), [1, 2], {1: 2, 3: 4}, {1, 2}, [((1, 2), 3)]]
 
 
 def extract_docstrings(module_name):
@@ -14,24 +85,38 @@ def extract_docstrings(module_name):
     """
     module = importlib.import_module(module_name)
     docstrings: dict[str, str] = {}
+    default_args: dict[str, Any] = {}
     for name, obj in inspect.getmembers(module):
         if inspect.isfunction(obj) and obj.__module__ == module_name:
+
             docstrings[name] = str(inspect.getdoc(obj))
-        if (
-            inspect.isclass(obj)
-            and obj.__module__ == module_name
-            and "no_convert" not in obj.__dict__
-        ):
-            for class_name, class_obj in inspect.getmembers(obj):
-                if not re.match(r"^_", class_name) and inspect.isfunction(class_obj):
-                    docstrings[class_name] = str(inspect.getdoc(class_obj))
+
+            param_names = []
+            param_values = []
+            for parameter_name, parameter in dict(inspect.signature(obj).parameters).items():
+                param_names.append(parameter_name)
+                param_values.append(parameter.default)
+
+            param_values_converted = convert_default_args(param_values)
+            assert isinstance(param_values_converted, list)
+            default_args[name] = dict(zip(param_names, param_values_converted))
+
+        # if (
+        #     inspect.isclass(obj)
+        #     and obj.__module__ == module_name
+        #     and "no_convert" not in obj.__dict__
+        # ):
+        #     for class_name, class_obj in inspect.getmembers(obj):
+        #         if not re.match(r"^_", class_name) and inspect.isfunction(class_obj):
+        #             docstrings[class_name] = str(inspect.getdoc(class_obj))
     replaced = {k: v.replace("None", "") for k, v in docstrings.items()}
-    return replaced
+    return replaced, default_args
 
 
 def to_roxygen(docstring: str):
     if not docstring:
         return "", []
+
     ds_without_header = re.sub(r"Parameters\n\-+", "", docstring)
     ds_with_params = re.sub(
         r"\s+``([a-zA-Z_][a-zA-Z0-9_]*)``\s*:\n\s*([.\n]*)", r"\n@param \1 ", ds_without_header
@@ -113,7 +198,9 @@ def create_R_files(module_structure, root_dir="RPkg", exclude_top_level=True, ov
     if os.path.exists(root_dir) or overwrite:
         shutil.rmtree(root_dir_orig)
         # os.makedirs(root_dir, exist_ok=True)
-    create_package_skeleton(root_dir_orig, next(iter(module_structure.keys())).split(".")[0])
+    basic_mod_name = next(iter(module_structure.keys())).split(".")[0]
+    ok_r_name = re.sub(r"_", ".", basic_mod_name)
+    create_package_skeleton(root_dir_orig, basic_mod_name, ok_r_name)
     for module_name, r_fns in module_structure.items():
         if exclude_top_level:
             start_idx = 1
@@ -127,27 +214,50 @@ def create_R_files(module_structure, root_dir="RPkg", exclude_top_level=True, ov
         full_file_path = os.path.join(module_folders_joined, module_name.split(".")[-1] + ".R")
         if not os.path.exists(full_file_path) or overwrite:
             with open(full_file_path, "w") as f:
-                f.write(f'py_pkg <- reticulate::import("{module_name}")\n\n')
-                f.write("\n\n\n\n".join(r_fns))
+                # f.write(f'py_pkg <- reticulate::import("{module_name}")\n\n')
+                f.write("\n\n".join(r_fns))
     do_roxygen(root_dir)
 
 
 def create_R_functions(module_name: str):
-    docstrings = extract_docstrings(module_name)
-    roxygenized = {name: to_roxygen(docstring) for name, docstring in docstrings.items()}
+    docstrings, default_args = extract_docstrings(module_name)
+    roxygenized = {name: to_roxygen(docstring)[0] for (name, docstring), in zip(docstrings.items())}
     fn_strings: list[str] = []
-    for name, (ds, params) in roxygenized.items():
+    for name, ds in roxygenized.items():
+        converted_defaults = default_args[name].values()
+        converted_defaults_strings = []
+        for c in converted_defaults:
+            if isinstance(c, inspect._empty):  # type: ignore
+                converted_default_str = ""
+            else:
+                converted_default_str = f" = {c}"
+            converted_defaults_strings.append(converted_default_str)
+
+        params = list(default_args[name].keys())
+
+        assert len(converted_defaults_strings) == len(params), (
+            f"Expected {len(params)} default (can be blank) arguments, got"
+            f" {len(converted_defaults_strings)}"
+        )
+
+        params_with_defaults = [f"{p}{d}" for p, d in zip(params, converted_defaults_strings)]
+
         if re.search("^_", name):
             new_name = f"`{name}`"
         else:
             new_name = name
         if not params:
-            param_section = "()"
+            param_section = param_section_w_parameters = "()"
         else:
             param_section = (
                 f"(\n                {',\n                '.join(params)}\n            )"
             )
-        fn_string = f"""{ds}\n{new_name} <- function{re.sub("    $", "", param_section)} {{
+            param_section_w_parameters = (
+                f"(\n                {',\n                '.join(params_with_defaults)}\n        "
+                "    )"
+            )
+        fn_string = f"""{ds}\n{new_name} <- function{re.sub("    $", "", param_section_w_parameters)} {{
+        py_pkg <- reticulate::import("{module_name}")
         return(
             py_pkg${new_name}{param_section}
         )
