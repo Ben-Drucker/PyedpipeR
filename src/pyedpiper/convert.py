@@ -41,8 +41,10 @@ def recurse_in_convert_default_args(
             conversion = inspect._empty()  # type: ignore
         if isinstance(a, str):
             conversion = f'"{a}"'
-        if isinstance(a, (int, float)):
+        if isinstance(a, float):
             conversion = f"{a}"
+        if isinstance(a, int):
+            conversion = f"{a}L"
         if isinstance(a, bool):
             conversion = str(a).upper()
         if a is None:
