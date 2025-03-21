@@ -31,8 +31,8 @@ def convert_default_args(default_args: list[convertable_types]) -> Sequence[conv
     -------
         If returning a singleton, returns the converted default argument in string format. If \
             returning a list, returns a list of converted default arguments in string format. \
-            One exception is if the default argument is `inspect._empty`, i.e., no default \
-            argument is provided, in which case it returns `inspect._empty` instead of a string.
+            One exception is if the default argument is ``inspect._empty``, i.e., no default \
+            argument is provided, in which case it returns ``inspect._empty`` instead of a string.
     """
     result = recurse_in_convert_default_args(default_args)
     assert isinstance(result, list)
@@ -54,8 +54,8 @@ def recurse_in_convert_default_args(
     -------
         If returning a singleton, returns the converted default argument in string format. If \
             returning a list, returns a list of converted default arguments in string format. \
-            One exception is if the default argument is `inspect._empty`, i.e., no default \
-            argument is provided, in which case it returns `inspect._empty` instead of a string.
+            One exception is if the default argument is ``inspect._empty``, i.e., no default \
+            argument is provided, in which case it returns ``inspect._empty`` instead of a string.
     Raises
     ------
         ValueError: If the default argument type is not supported.

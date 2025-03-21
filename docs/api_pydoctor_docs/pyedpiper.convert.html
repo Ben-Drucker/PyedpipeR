@@ -171,7 +171,7 @@
         
 
         
-            <div class="itemName"><code><a href="#extract_docstrings" class="internal-link" title="pyedpiper.convert.extract_docstrings">extract<wbr></wbr>_docstrings</a></code>
+            <div class="itemName"><code><a href="#extract_docstrings_and_default_args" class="internal-link" title="pyedpiper.convert.extract_docstrings_and_default_args">extract<wbr></wbr>_docstrings<wbr></wbr>_and<wbr></wbr>_default<wbr></wbr>_args</a></code>
             </div>
         
 
@@ -353,7 +353,7 @@
     
     <td>Function</td>
     <td><code><a href="#convert_default_args" class="internal-link" title="pyedpiper.convert.convert_default_args">convert<wbr></wbr>_default<wbr></wbr>_args</a></code></td>
-    <td><span class="undocumented">Undocumented</span></td>
+    <td>Convert default arguments to string format.</td>
   </tr><tr class="function">
     
     <td>Function</td>
@@ -367,23 +367,23 @@
   </tr><tr class="function">
     
     <td>Function</td>
-    <td><code><a href="#extract_docstrings" class="internal-link" title="pyedpiper.convert.extract_docstrings">extract<wbr></wbr>_docstrings</a></code></td>
+    <td><code><a href="#extract_docstrings_and_default_args" class="internal-link" title="pyedpiper.convert.extract_docstrings_and_default_args">extract<wbr></wbr>_docstrings<wbr></wbr>_and<wbr></wbr>_default<wbr></wbr>_args</a></code></td>
     <td>Extract docstrings from a Python module.</td>
   </tr><tr class="function">
     
     <td>Function</td>
     <td><code><a href="#main_convert" class="internal-link" title="pyedpiper.convert.main_convert">main<wbr></wbr>_convert</a></code></td>
-    <td><span class="undocumented">Undocumented</span></td>
+    <td>Convert a Python module to an R script.</td>
   </tr><tr class="function">
     
     <td>Function</td>
     <td><code><a href="#recurse_in_convert_default_args" class="internal-link" title="pyedpiper.convert.recurse_in_convert_default_args">recurse<wbr></wbr>_in<wbr></wbr>_convert<wbr></wbr>_default<wbr></wbr>_args</a></code></td>
-    <td><span class="undocumented">Undocumented</span></td>
+    <td>Sister function to <code><a href="pyedpiper.convert.html#convert_default_args" class="internal-link" title="pyedpiper.convert.convert_default_args">convert_default_args</a></code> that recursively converts default arguments.</td>
   </tr><tr class="function">
     
     <td>Function</td>
     <td><code><a href="#to_roxygen" class="internal-link" title="pyedpiper.convert.to_roxygen">to<wbr></wbr>_roxygen</a></code></td>
-    <td><span class="undocumented">Undocumented</span></td>
+    <td>Convert a Python docstring to a roxygen2-style R docstring.</td>
   </tr><tr class="typealias">
     
     <td>Type Alias</td>
@@ -433,7 +433,7 @@
   <div class="functionHeader">
     
     
-    <span class="py-keyword">def</span> <span class="py-defname">convert_default_args</span><span class="function-signature">(default_args: <code><a href="https://docs.python.org/3/library/stdtypes.html#list" class="intersphinx-link">list</a>[<wbr></wbr><a href="#convertable_types" class="internal-link" title="pyedpiper.convert.convertable_types">convertable_types</a>]</code>)</span>:
+    <span class="py-keyword">def</span> <span class="py-defname">convert_default_args</span><span class="function-signature">(default_args: <code><a href="https://docs.python.org/3/library/stdtypes.html#list" class="intersphinx-link">list</a>[<wbr></wbr><a href="#convertable_types" class="internal-link" title="pyedpiper.convert.convertable_types">convertable_types</a>]</code>) -&gt; <code><a href="https://docs.python.org/3/library/typing.html#typing.Sequence" class="intersphinx-link">Sequence</a>[<wbr></wbr><a href="#convertable_types" class="internal-link" title="pyedpiper.convert.convertable_types">convertable_types</a>]</code></span>:
     
     <a class="headerLink" href="#convert_default_args" title="pyedpiper.convert.convert_default_args">
       
@@ -443,7 +443,7 @@
   </div>
   <div class="docstring functionBody">
     
-    <div><p class="undocumented">Undocumented</p></div>
+    <div><p>Convert default arguments to string format.</p><table class="fieldTable"><tr class="fieldStart"><td class="fieldName" colspan="2">Parameters</td></tr><tr><td class="fieldArgContainer"><span class="fieldArg">default<wbr></wbr>_args:</span><code><a href="https://docs.python.org/3/library/stdtypes.html#list" class="intersphinx-link">list</a>[<wbr></wbr><a href="#convertable_types" class="internal-link" title="pyedpiper.convert.convertable_types">convertable_types</a>]</code></td><td class="fieldArgDesc">The default arguments to convert. Can be either a "singleton" (i.e. a single value) or a             list of values.</td></tr><tr class="fieldStart"><td class="fieldName" colspan="2">Returns</td></tr><tr><td class="fieldArgContainer"><code><a href="https://docs.python.org/3/library/typing.html#typing.Sequence" class="intersphinx-link">Sequence</a>[<wbr></wbr><a href="#convertable_types" class="internal-link" title="pyedpiper.convert.convertable_types">convertable_types</a>]</code></td><td class="fieldArgDesc">If returning a singleton, returns the converted default argument in string format. If             returning a list, returns a list of converted default arguments in string format.             One exception is if the default argument is <tt class="rst-docutils rst-literal">inspect._empty</tt>, i.e., no default             argument is provided, in which case it returns <tt class="rst-docutils rst-literal">inspect._empty</tt> instead of a string.</td></tr></table></div>
   </div>
 </div><div class="basefunction">
   
@@ -496,18 +496,18 @@
 </div><div class="basefunction">
   
   
-  <a name="pyedpiper.convert.extract_docstrings">
+  <a name="pyedpiper.convert.extract_docstrings_and_default_args">
     
   </a>
-  <a name="extract_docstrings">
+  <a name="extract_docstrings_and_default_args">
     
   </a>
   <div class="functionHeader">
     
     
-    <span class="py-keyword">def</span> <span class="py-defname">extract_docstrings</span><span class="function-signature">(module_name)</span>:
+    <span class="py-keyword">def</span> <span class="py-defname">extract_docstrings_and_default_args</span><span class="function-signature">(module_name) -&gt; <code><a href="https://docs.python.org/3/library/stdtypes.html#tuple" class="intersphinx-link">tuple</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#dict" class="intersphinx-link">dict</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>], <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#dict" class="intersphinx-link">dict</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#dict" class="intersphinx-link">dict</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="#convertable_types" class="internal-link" title="pyedpiper.convert.convertable_types">convertable_types</a>]]]</code></span>:
     
-    <a class="headerLink" href="#extract_docstrings" title="pyedpiper.convert.extract_docstrings">
+    <a class="headerLink" href="#extract_docstrings_and_default_args" title="pyedpiper.convert.extract_docstrings_and_default_args">
       
       
       ¶
@@ -515,14 +515,7 @@
   </div>
   <div class="docstring functionBody">
     
-    <div><p>Extract docstrings from a Python module.</p>
-<dl class="rst-docutils">
-<dt>Args:</dt>
-<dd>module_name (str): The name of the module to extract docstrings from.</dd>
-<dt>Returns:</dt>
-<dd>dict: A dictionary with function names as keys and their docstrings as values.</dd>
-</dl>
-</div>
+    <div><p>Extract docstrings from a Python module.</p><table class="fieldTable"><tr class="fieldStart"><td class="fieldName" colspan="2">Parameters</td></tr><tr><td class="fieldArgContainer"><span class="fieldArg">module<wbr></wbr>_name:</span>The name of the module to extract docstrings from.</td><td class="fieldArgDesc"></td></tr><tr class="fieldStart"><td class="fieldName" colspan="2">Returns</td></tr><tr><td class="fieldArgContainer"><code><a href="https://docs.python.org/3/library/stdtypes.html#tuple" class="intersphinx-link">tuple</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#dict" class="intersphinx-link">dict</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>], <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#dict" class="intersphinx-link">dict</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#dict" class="intersphinx-link">dict</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="#convertable_types" class="internal-link" title="pyedpiper.convert.convertable_types">convertable_types</a>]]]</code></td><td class="fieldArgDesc">A tuple of (1) a dictionary of function names mapped to their docstrings and             (2) a dictionary of function names mapped to sub-dicts, each of which map argument             names to their default values.</td></tr></table></div>
   </div>
 </div><div class="basefunction">
   
@@ -536,7 +529,7 @@
   <div class="functionHeader">
     
     
-    <span class="py-keyword">def</span> <span class="py-defname">main_convert</span><span class="function-signature">(root_module_name: <code><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a></code>)</span>:
+    <span class="py-keyword">def</span> <span class="py-defname">main_convert</span><span class="function-signature">(root_module_name: <code><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a></code>) -&gt; <code><a href="https://docs.python.org/3/library/stdtypes.html#dict" class="intersphinx-link">dict</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#list" class="intersphinx-link">list</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>]]</code></span>:
     
     <a class="headerLink" href="#main_convert" title="pyedpiper.convert.main_convert">
       
@@ -546,7 +539,7 @@
   </div>
   <div class="docstring functionBody">
     
-    <div><p class="undocumented">Undocumented</p></div>
+    <div><p>Convert a Python module to an R script.</p><table class="fieldTable"><tr class="fieldStart"><td class="fieldName" colspan="2">Parameters</td></tr><tr><td class="fieldArgContainer"><span class="fieldArg">root<wbr></wbr>_module<wbr></wbr>_name:</span><code><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a></code></td><td class="fieldArgDesc">The name of the root Python module to convert.</td></tr><tr class="fieldStart"><td class="fieldName" colspan="2">Returns</td></tr><tr><td class="fieldArgContainer"><code><a href="https://docs.python.org/3/library/stdtypes.html#dict" class="intersphinx-link">dict</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#list" class="intersphinx-link">list</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>]]</code></td><td class="fieldArgDesc">A dictionary with the module names as keys and their R functions as values.</td></tr></table></div>
   </div>
 </div><div class="basefunction">
   
@@ -570,7 +563,7 @@
   </div>
   <div class="docstring functionBody">
     
-    <div><p class="undocumented">Undocumented</p></div>
+    <div><p>Sister function to <code><a href="#convert_default_args" class="internal-link" title="pyedpiper.convert.convert_default_args">convert_default_args</a></code> that recursively converts default arguments.</p><table class="fieldTable"><tr class="fieldStart"><td class="fieldName" colspan="2">Parameters</td></tr><tr><td class="fieldArgContainer"><span class="fieldArg">default<wbr></wbr>_args:</span><code><a href="#convertable_types" class="internal-link" title="pyedpiper.convert.convertable_types">convertable_types</a> | <a href="https://docs.python.org/3/library/stdtypes.html#list" class="intersphinx-link">list</a>[<wbr></wbr><a href="#convertable_types" class="internal-link" title="pyedpiper.convert.convertable_types">convertable_types</a>]</code></td><td class="fieldArgDesc">The default arguments to convert. Can be either a "singleton" (i.e. a single value) or a             list of values.</td></tr><tr class="fieldStart"><td class="fieldName" colspan="2">Returns</td></tr><tr><td class="fieldArgContainer"><code><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a> | inspect._empty | <a href="https://docs.python.org/3/library/stdtypes.html#list" class="intersphinx-link">list</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a> | inspect._empty]</code></td><td class="fieldArgDesc">If returning a singleton, returns the converted default argument in string format. If             returning a list, returns a list of converted default arguments in string format.             One exception is if the default argument is <tt class="rst-docutils rst-literal">inspect._empty</tt>, i.e., no default             argument is provided, in which case it returns <tt class="rst-docutils rst-literal">inspect._empty</tt> instead of a string.</td></tr><tr class="fieldStart"><td class="fieldName" colspan="2">Raises</td></tr><tr><td class="fieldArgContainer"><code><a href="https://docs.python.org/3/library/exceptions.html#ValueError" class="intersphinx-link">ValueError</a></code></td><td>If the default argument type is not supported.:</td></tr></table></div>
   </div>
 </div><div class="basefunction">
   
@@ -584,7 +577,7 @@
   <div class="functionHeader">
     
     
-    <span class="py-keyword">def</span> <span class="py-defname">to_roxygen</span><span class="function-signature">(docstring: <code><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a></code>)</span>:
+    <span class="py-keyword">def</span> <span class="py-defname">to_roxygen</span><span class="function-signature">(docstring: <code><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a></code>) -&gt; <code><a href="https://docs.python.org/3/library/stdtypes.html#tuple" class="intersphinx-link">tuple</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#list" class="intersphinx-link">list</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>]]</code></span>:
     
     <a class="headerLink" href="#to_roxygen" title="pyedpiper.convert.to_roxygen">
       
@@ -594,7 +587,7 @@
   </div>
   <div class="docstring functionBody">
     
-    <div><p class="undocumented">Undocumented</p></div>
+    <div><p>Convert a Python docstring to a roxygen2-style R docstring.</p><table class="fieldTable"><tr class="fieldStart"><td class="fieldName" colspan="2">Parameters</td></tr><tr><td class="fieldArgContainer"><span class="fieldArg">docstring:</span><code><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a></code></td><td class="fieldArgDesc">The Python docstring to convert.</td></tr><tr class="fieldStart"><td class="fieldName" colspan="2">Returns</td></tr><tr><td class="fieldArgContainer"><code><a href="https://docs.python.org/3/library/stdtypes.html#tuple" class="intersphinx-link">tuple</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>, <wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#list" class="intersphinx-link">list</a>[<wbr></wbr><a href="https://docs.python.org/3/library/stdtypes.html#str" class="intersphinx-link">str</a>]]</code></td><td class="fieldArgDesc">Tuple of (1) The converted R docstring, as an R-style comment and (2) a list of parameter             names.</td></tr></table></div>
   </div>
 </div><div class="basetypealias">
   
