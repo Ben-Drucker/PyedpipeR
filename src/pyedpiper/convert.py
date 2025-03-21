@@ -1,12 +1,6 @@
-import importlib, inspect, os, pkgutil, re, shutil, textwrap, types
-from numpy import nan
-from typing import Any, Union
-
-from torch import NoneType
+import collections.abc, importlib, inspect, os, pkgutil, re, shutil, textwrap, types
 from .r_scripts.r_pkg_creation import create_package_skeleton, do_roxygen
-
-
-import collections.abc
+from typing import Any, Sequence, Union
 
 # Define new type "convertable types"
 convertable_types = Union[
@@ -23,13 +17,49 @@ convertable_types = Union[
 ]
 
 
-def convert_default_args(default_args: list[convertable_types]):
-    return recurse_in_convert_default_args(default_args)
+def convert_default_args(default_args: list[convertable_types]) -> Sequence[convertable_types]:
+    """Convert default arguments to string format.
+
+    Parameters
+    ----------
+    ``default_args`` :
+        The default arguments to convert. Can be either a "singleton" (i.e. a single value) or a \
+            list of values.
+
+
+    Returns
+    -------
+        If returning a singleton, returns the converted default argument in string format. If \
+            returning a list, returns a list of converted default arguments in string format. \
+            One exception is if the default argument is `inspect._empty`, i.e., no default \
+            argument is provided, in which case it returns `inspect._empty` instead of a string.
+    """
+    result = recurse_in_convert_default_args(default_args)
+    assert isinstance(result, list)
+    return result
 
 
 def recurse_in_convert_default_args(
     default_args: convertable_types | list[convertable_types],
 ) -> str | inspect._empty | list[str | inspect._empty]:  # type: ignore
+    """Sister function to `convert_default_args` that recursively converts default arguments.
+
+    Parameters
+    ----------
+    ``default_args`` :
+        The default arguments to convert. Can be either a "singleton" (i.e. a single value) or a \
+            list of values.
+
+    Returns
+    -------
+        If returning a singleton, returns the converted default argument in string format. If \
+            returning a list, returns a list of converted default arguments in string format. \
+            One exception is if the default argument is `inspect._empty`, i.e., no default \
+            argument is provided, in which case it returns `inspect._empty` instead of a string.
+    Raises
+    ------
+        ValueError: If the default argument type is not supported.
+    """
     r_args = []
     singleton = False
     if not isinstance(default_args, collections.abc.Collection):
@@ -75,15 +105,22 @@ def recurse_in_convert_default_args(
 # test_args = [1, 2.0, "a", True, None, (1, 2), [1, 2], {1: 2, 3: 4}, {1, 2}, [((1, 2), 3)]]
 
 
-def extract_docstrings(module_name):
+def extract_docstrings_and_default_args(
+    module_name,
+) -> tuple[dict[str, str], dict[str, dict[str, convertable_types]]]:
     """
     Extract docstrings from a Python module.
 
-    Args:
-        module_name (str): The name of the module to extract docstrings from.
+    Parameters
+    ----------
+        module_name : The name of the module to extract docstrings from.
 
-    Returns:
-        dict: A dictionary with function names as keys and their docstrings as values.
+    Returns
+    -------
+        A tuple of (1) a dictionary of function names mapped to their docstrings and \
+            (2) a dictionary of function names mapped to sub-dicts, each of which map argument \
+            names to their default values.
+
     """
     module = importlib.import_module(module_name)
     docstrings: dict[str, str] = {}
@@ -103,6 +140,8 @@ def extract_docstrings(module_name):
             assert isinstance(param_values_converted, list)
             default_args[name] = dict(zip(param_names, param_values_converted))
 
+        # TODO: Add class support
+
         # if (
         #     inspect.isclass(obj)
         #     and obj.__module__ == module_name
@@ -115,7 +154,19 @@ def extract_docstrings(module_name):
     return replaced, default_args
 
 
-def to_roxygen(docstring: str):
+def to_roxygen(docstring: str) -> tuple[str, list[str]]:
+    """Convert a Python docstring to a roxygen2-style R docstring.
+
+    Parameters
+    ----------
+    ``docstring`` :
+        The Python docstring to convert.
+
+    Returns
+    -------
+        Tuple of (1) The converted R docstring, as an R-style comment and (2) a list of parameter \
+            names.
+    """
     if not docstring:
         return "", []
 
@@ -162,10 +213,23 @@ def to_roxygen(docstring: str):
     if out_str.endswith("#'\n"):
         out_str = out_str[:-3]
 
-    return out_str, re.findall(r"@param ([^\s]*)", out_str)
+    found_all: list[str] = re.findall(r"@param ([^\s]*)", out_str)
+
+    return out_str, found_all
 
 
-def main_convert(root_module_name: str):
+def main_convert(root_module_name: str) -> dict[str, list[str]]:
+    """Convert a Python module to an R script.
+
+    Parameters
+    ----------
+    ``root_module_name`` :
+        The name of the root Python module to convert.
+
+    Returns
+    -------
+        A dictionary with the module names as keys and their R functions as values.
+    """
     module_structure = {}
     root_module = importlib.import_module(root_module_name)
 
@@ -222,7 +286,7 @@ def create_R_files(module_structure, root_dir="RPkg", exclude_top_level=True, ov
 
 
 def create_R_functions(module_name: str):
-    docstrings, default_args = extract_docstrings(module_name)
+    docstrings, default_args = extract_docstrings_and_default_args(module_name)
     roxygenized = {name: to_roxygen(docstring)[0] for (name, docstring), in zip(docstrings.items())}
     fn_strings: list[str] = []
     for name, ds in roxygenized.items():
