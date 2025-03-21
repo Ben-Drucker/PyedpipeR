@@ -1,4 +1,4 @@
-### Link to full API specification: [API](...)
+### Link to full API specification: [API](https://ben-drucker.github.io/PyedpipeR/)
 
 ### Tool Usage
 Using CLI:
