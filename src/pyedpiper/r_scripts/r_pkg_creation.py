@@ -1,9 +1,26 @@
+"""Functions that run R code to create an R package and document it."""
+
 import re
 from importlib import metadata as meta
 from rpy2.robjects import r
 
 
 def create_package_skeleton(package_root_path: str, pkg_name: str, pkg_name_rnorm: str):
+    """Create an R package skeleton and takes into account the metadata of the Python package.
+
+    Parameters
+    ----------
+    ``package_root_path`` :
+        _description_
+    ``pkg_name`` :
+        _description_
+    ``pkg_name_rnorm`` :
+        _description_
+
+    Returns
+    -------
+        _description_
+    """
     metadata_dict = dict(meta.metadata(pkg_name).__dict__["_headers"])
     r_desc_to_pyproj_mapping = {
         "Title": "Name",

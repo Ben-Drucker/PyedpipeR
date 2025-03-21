@@ -1,3 +1,5 @@
+"""Functions that implement the logic for converting Python packages to R packages."""
+
 import collections.abc, importlib, inspect, os, pkgutil, re, shutil, textwrap, types
 from .r_scripts.r_pkg_creation import create_package_skeleton, do_roxygen
 from typing import Any, Sequence, Union
@@ -15,6 +17,7 @@ convertable_types = Union[
     dict,
     inspect._empty,  # type: ignore
 ]
+"""A type that can be converted to a string (i.e., that R understands)."""
 
 
 def convert_default_args(default_args: list[convertable_types]) -> Sequence[convertable_types]:
